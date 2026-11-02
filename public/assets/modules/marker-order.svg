@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="6" y="8" width="36" height="32" rx="4" />
+  <line x1="6" y1="16" x2="42" y2="16" />
+  <!-- 3 Marker arrows/divisions -->
+  <path d="M14 32V22M14 22L11 25M14 22L17 25" />
+  <path d="M24 32V22M24 22L21 25M24 22L27 25" />
+  <path d="M34 32V22M34 22L31 25M34 22L37 25" />
+</svg>
+
