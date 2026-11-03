@@ -101,7 +101,6 @@ export default function HomeNavbar({
         <BrandLogo
           size={38}
           showText={true}
-          subtitle="Garment Intelligence"
         />
       </div>
 

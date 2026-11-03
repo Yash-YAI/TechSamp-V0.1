@@ -64,6 +64,7 @@ export default function HomePage({ user, onLogout }) {
     return modulesConfig
       .filter((section) => !section.hidden)
       .map((section) => ({
+        ...section,
         id: section.id,
         title: resolveTitle(section.titleKey, section.title),
         items: section.items.map((item) => ({

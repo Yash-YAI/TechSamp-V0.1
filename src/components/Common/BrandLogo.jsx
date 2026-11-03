@@ -3,13 +3,13 @@ import { useTheme } from '../../context/ThemeContext';
 
 /**
  * BrandLogo Component
- * Renders the official "T & S" (Tech & Samp) logo for Textile & Apparel Intelligence.
+ * Renders the official "T & S" (Tech & Samp) logo.
  *
  * @param {Object} props
  * @param {'sm'|'md'|'lg'|'xl'|number} [props.size='md'] - Dimensions of the icon badge.
  * @param {boolean} [props.showText=false] - Whether to render brand typography beside/under the icon.
  * @param {'horizontal'|'vertical'} [props.layout='horizontal'] - Alignment of icon and text.
- * @param {string} [props.subtitle='Apparel Intelligence'] - Subtext beneath the brand title.
+ * @param {string|null} [props.subtitle=null] - Subtext beneath the brand title.
  * @param {Function} [props.onClick] - Click handler.
  * @param {string} [props.className] - Container CSS classes.
  * @param {Object} [props.style] - Container inline styles.
@@ -18,7 +18,7 @@ export default function BrandLogo({
   size = 'md',
   showText = false,
   layout = 'horizontal',
-  subtitle = 'Apparel Intelligence',
+  subtitle = null,
   onClick,
   className = '',
   style = {},
@@ -210,7 +210,7 @@ export default function BrandLogo({
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              T &amp; S
+              T & S
             </span>
           </div>
           {subtitle && (

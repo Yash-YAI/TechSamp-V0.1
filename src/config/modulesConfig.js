@@ -23,6 +23,7 @@ export const modulesConfig = [
     id: "main_operations",
     titleKey: "tech.Production Planning & Operations",
     title: "Production Planning & Operations",
+    hideTitle: true,
     items: [
       {
         path: "/marker-order",
