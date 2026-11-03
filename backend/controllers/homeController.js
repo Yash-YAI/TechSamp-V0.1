@@ -1,4 +1,4 @@
-import User from '../models/User.js';
+import { UserMain as User } from './dbController.js';
 
 /**
  * Controller: Get Home page dashboard information and overview

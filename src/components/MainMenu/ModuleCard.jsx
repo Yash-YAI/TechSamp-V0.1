@@ -28,7 +28,7 @@ export default function ModuleCard({ item, onClick }) {
       desc: 'text-slate-600 dark:text-slate-400',
     },
     C: {
-      card: 'bg-slate-100 dark:bg-slate-800/60 border border-slate-300 dark:border-slate-700 grayscale opacity-60 cursor-not-allowed shadow-2xs',
+      card: 'bg-slate-100 dark:bg-slate-800/60 border border-slate-300 dark:border-slate-700 grayscale opacity-70 cursor-pointer hover:opacity-90 hover:-translate-y-1 shadow-2xs',
       title: 'text-slate-600 dark:text-slate-300',
       desc: 'text-slate-500 dark:text-slate-400',
     },
@@ -60,7 +60,7 @@ export default function ModuleCard({ item, onClick }) {
       )}
 
       {/* 3D Module Image without thick border */}
-      <div className="w-20 h-20 my-2 transition-transform duration-200 group-hover:scale-105 flex items-center justify-center">
+      <div className="w-36 h-36 my-2 transition-transform duration-200 group-hover:scale-105 flex items-center justify-center">
         <img
           src={item.image}
           alt={item.title || ''}

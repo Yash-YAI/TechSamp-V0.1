@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-const UserSchema = new mongoose.Schema(
+export const UserSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -57,7 +57,9 @@ const UserSchema = new mongoose.Schema(
  * Compare entered password with stored password (supports bcrypt $2y$/$2a$/$2b$ and fallback)
  */
 UserSchema.methods.comparePassword = async function (candidatePassword) {
-  if (!this.password) return false;
+  if (!this.password || candidatePassword === undefined || candidatePassword === null) return false;
+
+  const rawCandidate = String(candidatePassword);
 
   try {
     // Standardize $2y$ to $2a$ for bcrypt compatibility if needed
@@ -65,17 +67,24 @@ UserSchema.methods.comparePassword = async function (candidatePassword) {
       ? '$2a$' + this.password.slice(4)
       : this.password;
 
-    const isMatch = await bcrypt.compare(candidatePassword, normalizedHash);
+    const isMatch = await bcrypt.compare(rawCandidate, normalizedHash);
     if (isMatch) return true;
   } catch (err) {
     // In case hash format is non-standard
   }
 
-  // Plain-text fallback for development/legacy accounts
-  return this.password === candidatePassword;
+  // Plain-text fallback for development/legacy accounts (strict case-sensitive comparison)
+  return this.password === rawCandidate;
 };
 
+/**
+ * Factory function to bind UserSchema to a specific connection
+ */
+export const createUserModel = (connection) => {
+  return connection.models.User || connection.model('User', UserSchema);
+};
+
+// Fallback to default connection if queried directly
 const User = mongoose.models.User || mongoose.model('User', UserSchema);
 
 export default User;
-

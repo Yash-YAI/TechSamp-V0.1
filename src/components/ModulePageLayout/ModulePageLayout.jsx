@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import HomeNavbar from '../HomePage/HomeNavbar';
+import HomeNavbar from '../Navbar/HomeNavbar';
 
 export default function ModulePageLayout({
   title,

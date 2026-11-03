@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Search,
   Bell,
@@ -23,6 +24,7 @@ export default function HomeNavbar({
   onOpenManagement,
   onFocusSearch,
 }) {
+  const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { theme, toggleTheme } = useTheme();
 
@@ -68,23 +70,23 @@ export default function HomeNavbar({
 
   return (
     <nav className="w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-2.5 flex items-center justify-between sticky top-0 z-40 select-none shadow-xs">
-      {/* LEFT BRAND SECTION */}
-      <div className="flex items-center gap-3">
+      {/* LEFT BRAND SECTION - Clickable to return Home */}
+      <div
+        onClick={() => navigate('/home')}
+        title="Return to Home"
+        className="flex items-center gap-3 cursor-pointer group select-none transition-opacity hover:opacity-85"
+      >
         {/* Show Apps / Logo Badge */}
-        <div className="relative group">
+        <div className="relative">
           <div
-            title="Show apps"
-            className="w-9 h-9 rounded-xl bg-black flex items-center justify-center text-white font-black text-xs shadow-md border-2 border-amber-400/80 cursor-pointer transition-transform hover:scale-105"
+            className="w-9 h-9 rounded-xl bg-black flex items-center justify-center text-white font-black text-xs shadow-md border-2 border-amber-400/80 transition-transform group-hover:scale-105"
           >
             TL
           </div>
-          <span className="absolute -bottom-8 left-0 hidden group-hover:block bg-slate-800 text-white text-[10px] font-semibold px-2 py-0.5 rounded shadow-md whitespace-nowrap z-50">
-            Show apps
-          </span>
         </div>
 
         {/* Brand Text */}
-        <span className="text-[#8b5cf6] font-black text-2xl tracking-tight">
+        <span className="text-[#8b5cf6] font-black text-2xl tracking-tight transition-transform group-hover:scale-102">
           T & S
         </span>
       </div>
@@ -276,19 +278,6 @@ export default function HomeNavbar({
             </div>
           )}
         </div>
-
-        {/* Theme Toggle Button (Light / Dark) */}
-        <button
-          onClick={toggleTheme}
-          title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-          className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-amber-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all cursor-pointer"
-        >
-          {theme === 'dark' ? (
-            <Sun size={18} className="text-amber-400 animate-in spin-in-180 duration-200" />
-          ) : (
-            <Moon size={18} className="text-slate-600 transition-transform hover:-rotate-12 duration-200" />
-          )}
-        </button>
       </div>
     </nav>
   );

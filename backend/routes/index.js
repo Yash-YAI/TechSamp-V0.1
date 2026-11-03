@@ -2,6 +2,8 @@ import express from 'express';
 import apiRoutes from './apiRoutes.js';
 import authRoutes from './authRoutes.js';
 import homeRoutes from './homeRoutes.js';
+import userRoutes from './userRoutes.js';
+import dbRoutes from './dbRoutes.js';
 
 const router = express.Router();
 
@@ -16,6 +18,8 @@ router.get('/', (req, res) => {
 // Mount Feature Routes
 router.use('/api/auth', authRoutes);
 router.use('/api/home', homeRoutes);
+router.use('/api', userRoutes);
+router.use('/api', dbRoutes);
 router.use('/api', apiRoutes);
 
 // 404 Route Handler for undefined endpoints

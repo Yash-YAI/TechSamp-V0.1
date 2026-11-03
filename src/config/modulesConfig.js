@@ -28,8 +28,8 @@ export const modulesConfig = [
         image: "/assets/modules/marker-order.jpg",
         titleKey: "tech.Marker Order",
         description: "Create and manage marker orders.",
-        status: "F",
-        version: "1.0",
+        status: "C",
+        version: "0",
       },
       {
         path: "/marker-ratio",
@@ -37,8 +37,8 @@ export const modulesConfig = [
         image: "/assets/modules/marker-ratio.jpg",
         titleKey: "tech.Marker Ratio",
         description: "Marker ratio planning.",
-        status: "F",
-        version: "1.0",
+        status: "C",
+        version: "0",
       },
       {
         path: "/fabric-consumption",
@@ -46,8 +46,8 @@ export const modulesConfig = [
         image: "/assets/modules/fabric-consumption.jpg",
         titleKey: "tech.Fabric Consumption",
         description: "Fabric usage estimates.",
-        status: "D",
-        version: "0.5",
+        status: "C",
+        version: "0",
       },
       {
         path: "/thread-consumption",
@@ -55,8 +55,8 @@ export const modulesConfig = [
         image: "/assets/modules/thread-consumption.jpg",
         titleKey: "tech.Thread Consumption",
         description: "Thread usage estimates.",
-        status: "D",
-        version: "0.5",
+        status: "C",
+        version: "0",
       },
       {
         path: "/gsd-sam",

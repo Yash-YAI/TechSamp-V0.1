@@ -6,10 +6,11 @@ import Swal from "sweetalert2";
 import { useTheme } from "../context/ThemeContext";
 import apiClient from "../api/client";
 import { modulesConfig } from "../config/modulesConfig";
-import HomeNavbar from "../components/HomePage/HomeNavbar";
-import SectionColumn from "../components/HomePage/SectionColumn";
-import ProfileModal from "../components/HomePage/ProfileModal";
-import ManagementModal from "../components/HomePage/ManagementModal";
+import HomeNavbar from "../components/Navbar/HomeNavbar";
+import SectionColumn from "../components/MainMenu/SectionColumn";
+import ProfileModal from "../components/Users/ProfileModal";
+import UserManagementModal from "../components/Users/UserManagementModal";
+import RoleManagementModal from "../components/RoleManagement/RoleManagementModal";
 
 export default function HomePage({ user, onLogout }) {
   const { t } = useTranslation();
@@ -53,13 +54,26 @@ export default function HomePage({ user, onLogout }) {
   }, []);
 
   // Translate section titles and items dynamically based on current language
-  const resolveTitle = useCallback((key, fallback) => {
-    if (!key) return fallback || "Module";
-    if (key.startsWith("tech.") || key.startsWith("nav.") || key.startsWith("home.")) {
-      const cleanKey = key.replace(/^[^.]+\./, "");
-      return t(key, fallback || cleanKey);
+  const resolveTitle = useCallback((key, customFallback) => {
+    if (!key) return customFallback || "Module";
+    const cleanName = key.replace(/^(tech\.|nav\.|home\.)/, "");
+    const fallbackText = customFallback && customFallback !== "Module" && customFallback !== "" ? customFallback : cleanName;
+
+    // Check key directly
+    const translatedDirect = t(key, { defaultValue: "" });
+    if (translatedDirect && translatedDirect !== key) {
+      return translatedDirect;
     }
-    return t(`tech.${key}`, fallback || key);
+
+    // Check with tech. prefix if not already present
+    if (!key.startsWith("tech.")) {
+      const translatedTech = t(`tech.${key}`, { defaultValue: "" });
+      if (translatedTech && translatedTech !== `tech.${key}`) {
+        return translatedTech;
+      }
+    }
+
+    return fallbackText;
   }, [t]);
 
   const allSections = useMemo(() => {
@@ -67,10 +81,10 @@ export default function HomePage({ user, onLogout }) {
       .filter((section) => !section.hidden)
       .map((section) => ({
         id: section.id,
-        title: resolveTitle(section.titleKey, section.id),
+        title: resolveTitle(section.titleKey, section.title),
         items: section.items.map((item) => ({
           ...item,
-          title: resolveTitle(item.titleKey, "Module"),
+          title: resolveTitle(item.titleKey, item.title),
           badge: item.hasBadge ? (newOrdersCount > 0 ? newOrdersCount : null) : null,
         })),
       }));
@@ -91,18 +105,16 @@ export default function HomePage({ user, onLogout }) {
 
   const isSuperAdmin = useMemo(() => {
     return rolesList.some((r) =>
-      r.includes("super admin") || r.includes("superadmin")
+      r.includes("super admin") ||
+      r.includes("superadmin") ||
+      r.includes("developer") ||
+      r.includes("admin")
     );
   }, [rolesList]);
 
   const isPrivileged = useMemo(() => {
-    return rolesList.some((r) =>
-      r.includes("admin") ||
-      r.includes("super admin") ||
-      r.includes("superadmin") ||
-      r.includes("developer")
-    );
-  }, [rolesList]);
+    return isSuperAdmin;
+  }, [isSuperAdmin]);
 
   // --- ACCESS CONTROL LOGIC ---
   const hasAccess = useCallback(
@@ -240,11 +252,16 @@ export default function HomePage({ user, onLogout }) {
         onClose={() => setIsProfileModalOpen(false)}
       />
 
-      {/* User / Role Management Modal */}
-      <ManagementModal
-        type={managementModal.type}
-        isOpen={managementModal.open}
+      {/* User Management Modal */}
+      <UserManagementModal
+        isOpen={managementModal.open && managementModal.type === 'user'}
         onClose={() => setManagementModal({ open: false, type: 'user' })}
+      />
+
+      {/* Role Management Modal */}
+      <RoleManagementModal
+        isOpen={managementModal.open && managementModal.type === 'role'}
+        onClose={() => setManagementModal({ open: false, type: 'role' })}
       />
     </div>
   );
