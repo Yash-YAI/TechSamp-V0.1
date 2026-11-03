@@ -37,7 +37,7 @@ Before you start, ensure you have the following installed on your machine:
 
 - **Node.js**: `v18.x` or higher (Recommended: `v20.x` or `v22.x`)
 - **npm**: `v9.x` or higher (packaged with Node.js)
-- **MongoDB**: A running MongoDB instance (local `mongodb://127.0.0.1:27017/eco_development` or accessible remote server)
+- **MongoDB**: A running MongoDB instance (local or accessible remote database server)
 - **Git**: For version control
 - *(Optional)* **mkcert** or **OpenSSL**: For SSL certificates (the backend will automatically generate fallback certificates if not already present).
 
@@ -99,52 +99,16 @@ npm install
 
 ### 3. Configure Environment Variables
 
-Create your local `.env` file by copying the provided `.env.example`:
+Create your local `.env` configuration file from the template:
 
 ```bash
 cp .env.example .env
 cp .env.example backend/.env
 ```
 
-Open `.env` (and `backend/.env`) in your text editor and adjust the values as needed:
+Open `.env` (and `backend/.env`) in your text editor and configure your environment variables (server port, database connections, and authentication secrets) as outlined in `.env.example`.
 
-```env
-# Server Port & Mode
-PORT=5003
-NODE_ENV=development
-
-# Multi-Database Configuration (MongoDB)
-# 1. Main User Database (eco_development / ym_eco_board)
-MONGO_URI=mongodb://127.0.0.1:27017/eco_development
-MongoDB_URI_ym_eco_board=mongodb://127.0.0.1:27017/eco_development
-
-# 2. Tech & Samp Database (techSamp / ym_ypm)
-MongoDB_URI_ym_ypm=mongodb://127.0.0.1:27017/techSamp
-MONGO_URI_TECHSAMP=mongodb://127.0.0.1:27017/techSamp
-
-# 3. Production Operations Database (ym_prod)
-MongoDB_URI_ym_prod=mongodb://127.0.0.1:27017/ym_prod
-MONGO_URI_PROD=mongodb://127.0.0.1:27017/ym_prod
-
-# JWT Authentication Secrets
-JWT_SECRET=your_super_secret_jwt_key_here
-JWT_REFRESH_SECRET=your_super_secret_jwt_refresh_key_here
-
-# SSL / HTTPS Configuration
-USE_HTTPS=true
-SSL_KEY_PATH=./backend/certs/key.pem
-SSL_CERT_PATH=./backend/certs/cert.pem
-
-# Backend API URLs
-API_BASE_URL=https://localhost:5003
-VITE_API_BASE_URL=https://localhost:5003
-
-# Frontend URL for CORS
-CLIENT_URL=http://localhost:5173
-```
-
-> **Note**: If your MongoDB is hosted on a network server (e.g., `192.163.0.23`), update `MONGO_URI` accordingly:
-> `MONGO_URI=mongodb://192.163.0.23:27017/eco_development`
+> **Security Notice**: Never commit `.env` files or expose sensitive database credentials, network IP addresses, or secret keys in public repositories or documentation. Keep all connection strings and secrets secure in your local environment.
 
 ---
 
@@ -177,7 +141,7 @@ npm run server:dev
 You should see:
 ```text
 ✓ SSL Certificates loaded
-✓ MongoDB Connected: eco_development
+✓ MongoDB Connected: database_name
 ✓ Server running securely over HTTPS on port 5003
 ```
 
@@ -240,8 +204,8 @@ kill $(lsof -t -i:5003)
 
 ### 2. `Unable to connect to the authentication server`
 - Ensure the backend server is running in your terminal (`npm run server`).
-- Check that the `MONGO_URI` in `.env` is reachable from your network.
-- Verify the Vite proxy in `vite.config.js` points to your backend URL (`API_BASE_URL`).
+- Check that your database server is running and accessible from your environment.
+- Verify the API URL configured in `.env` is correct.
 
 ### 3. Self-Signed SSL Certificate Warning in Browser
 When testing backend endpoints directly in the browser (`https://localhost:5003`), your browser may warn that the certificate is self-signed:

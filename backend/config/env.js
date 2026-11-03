@@ -13,7 +13,7 @@ dotenv.config({ path: envPath });
 export const config = {
   port: process.env.PORT || 5003,
   nodeEnv: process.env.NODE_ENV || 'development',
-  apiBaseUrl: process.env.API_BASE_URL || 'https://192.163.0.23:5003',
+  apiBaseUrl: process.env.API_BASE_URL || 'https://localhost:5003',
   jwtSecret: process.env.JWT_SECRET || '',
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || '',
   mongoUri: process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/techsamp_db',
