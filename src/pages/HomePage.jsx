@@ -40,7 +40,7 @@ export default function HomePage({ user, onLogout }) {
   // Translate section titles and items dynamically based on current language
   const resolveTitle = useCallback((key, customFallback) => {
     if (!key) return customFallback || "Module";
-    const cleanName = key.replace(/^(tech\.|nav\.|home\.)/, "");
+    const cleanName = key.replace(/^(ts\.|nav\.|home\.)/, "");
     const fallbackText = customFallback && customFallback !== "Module" && customFallback !== "" ? customFallback : cleanName;
 
     // Check key directly
@@ -49,11 +49,11 @@ export default function HomePage({ user, onLogout }) {
       return translatedDirect;
     }
 
-    // Check with tech. prefix if not already present
-    if (!key.startsWith("tech.")) {
-      const translatedTech = t(`tech.${key}`, { defaultValue: "" });
-      if (translatedTech && translatedTech !== `tech.${key}`) {
-        return translatedTech;
+    // Check with ts. prefix if not already present
+    if (!key.startsWith("ts.")) {
+      const translatedTs = t(`ts.${key}`, { defaultValue: "" });
+      if (translatedTs && translatedTs !== `ts.${key}`) {
+        return translatedTs;
       }
     }
 
@@ -114,7 +114,7 @@ export default function HomePage({ user, onLogout }) {
 
       // 2. Regular non-admin users: can only see modules matching their assigned module role
       const itemTitleLower = (item.title || "").trim().toLowerCase();
-      const titleKeyClean = (item.titleKey || "").replace(/^(tech\.|nav\.|home\.)/, "").trim().toLowerCase();
+      const titleKeyClean = (item.titleKey || "").replace(/^(ts\.|nav\.|home\.)/, "").trim().toLowerCase();
 
       // Check matching by module title or titleKey
       if (itemTitleLower && rolesList.includes(itemTitleLower)) return true;

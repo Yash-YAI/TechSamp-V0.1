@@ -271,7 +271,7 @@ const extractRolesFromConfig = (config) => {
           if (trimmed) rolesSet.add(trimmed);
         });
       }
-      const rawTitle = item.title || (item.titleKey ? item.titleKey.replace(/^(tech\.|nav\.|home\.)/, '') : '');
+      const rawTitle = item.title || (item.titleKey ? item.titleKey.replace(/^(ts\.|nav\.|home\.)/, '') : '');
       if (rawTitle) {
         rolesSet.add(rawTitle.trim());
       }
@@ -307,7 +307,7 @@ const getModulesForRole = (roleName, t) => {
     if (section.hidden) return;
     section.items.forEach((item) => {
       const itemTitle = (item.title || (item.titleKey ? t(item.titleKey, item.title || '') : '')).trim();
-      const rawTitle = (item.title || (item.titleKey ? item.titleKey.replace(/^(tech\.|nav\.|home\.)/, '') : '')).trim();
+      const rawTitle = (item.title || (item.titleKey ? item.titleKey.replace(/^(ts\.|nav\.|home\.)/, '') : '')).trim();
 
       const matchesTitle = itemTitle.toLowerCase() === normalizedRole || rawTitle.toLowerCase() === normalizedRole;
       const matchesRoles = item.roles && item.roles.some((r) => r.trim().toLowerCase() === normalizedRole);
