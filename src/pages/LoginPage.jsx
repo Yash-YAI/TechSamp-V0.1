@@ -140,7 +140,7 @@ export default function LoginPage({ onLoginSuccess }) {
               letterSpacing: '0.3px',
             }}
           >
-            <span>TexLink Apparel & Merchandising Intelligence</span>
+            <span>Tech &amp; Samp (T &amp; S) • Garment &amp; Merchandising Intelligence</span>
           </div>
         </div>
       </main>

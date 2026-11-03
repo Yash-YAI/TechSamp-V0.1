@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   X,
   Search,
   Plus,
-  Bot,
   Download,
   Upload,
   ChevronDown,
@@ -18,18 +17,25 @@ import UserFormModal from './UserFormModal';
 
 export default function UserManagementModal({ isOpen, onClose }) {
   const [users, setUsers] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [activeSearch, setActiveSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
-  // Load all users from backend API
-  const loadUsers = useCallback(async (query = '') => {
+  // Load users with server-side pagination to ensure instant 60fps responsiveness
+  const loadUsers = useCallback(async (query = '', page = 1) => {
     setLoading(true);
     try {
-      const res = await fetchUsers(query);
+      const res = await fetchUsers(query, page, 50);
       if (Array.isArray(res.data)) {
         setUsers(res.data);
+        setTotalCount(res.total ?? res.data.length);
+        setCurrentPage(res.page || 1);
+        setTotalPages(res.totalPages || 1);
       }
     } catch (err) {
       console.error('Error loading users:', err);
@@ -43,17 +49,43 @@ export default function UserManagementModal({ isOpen, onClose }) {
     }
   }, []);
 
+  // Initial load when modal opens
   useEffect(() => {
     if (isOpen) {
-      loadUsers(searchTerm);
+      loadUsers('', 1);
     }
   }, [isOpen, loadUsers]);
+
+  // Debounced search: typing in the search box is instant, and queries execute after 350ms pause
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = setTimeout(() => {
+      const trimmed = searchInput.trim();
+      if (trimmed !== activeSearch) {
+        setActiveSearch(trimmed);
+        setCurrentPage(1);
+        loadUsers(trimmed, 1);
+      }
+    }, 350);
+
+    return () => clearTimeout(handler);
+  }, [searchInput, isOpen, activeSearch, loadUsers]);
 
   if (!isOpen) return null;
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    loadUsers(searchTerm);
+    const trimmed = searchInput.trim();
+    setActiveSearch(trimmed);
+    setCurrentPage(1);
+    loadUsers(trimmed, 1);
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput('');
+    setActiveSearch('');
+    setCurrentPage(1);
+    loadUsers('', 1);
   };
 
   const handleOpenAddUser = () => {
@@ -95,7 +127,7 @@ export default function UserManagementModal({ isOpen, onClose }) {
             timer: 1500,
             showConfirmButton: false,
           });
-          loadUsers(searchTerm);
+          loadUsers(activeSearch, currentPage);
         } catch (err) {
           Swal.fire({
             icon: 'error',
@@ -104,15 +136,6 @@ export default function UserManagementModal({ isOpen, onClose }) {
           });
         }
       }
-    });
-  };
-
-  const handleAgentAccess = (user) => {
-    Swal.fire({
-      icon: 'info',
-      title: 'AI Agent Access',
-      text: `AI Agent and Assistant permissions for ${user.name || user.emp_code} are active.`,
-      confirmButtonColor: '#3b82f6',
     });
   };
 
@@ -161,8 +184,8 @@ export default function UserManagementModal({ isOpen, onClose }) {
                 <input
                   type="text"
                   placeholder="Search here....."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 />
               </div>
@@ -172,37 +195,27 @@ export default function UserManagementModal({ isOpen, onClose }) {
               >
                 Search
               </button>
-              {searchTerm && (
+              {searchInput && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setSearchTerm('');
-                    loadUsers('');
-                  }}
+                  onClick={handleClearSearch}
+                  title="Clear search and return to working users"
                   className="p-2 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                 >
                   <RefreshCw size={14} />
                 </button>
               )}
+              {/* Working Status Default Badge */}
+              <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 rounded-full border border-emerald-200 dark:border-emerald-800 whitespace-nowrap">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                {activeSearch
+                  ? `Search (${totalCount})`
+                  : `Working Only (${totalCount})`}
+              </span>
             </form>
 
-            {/* Action Buttons (AI Agent Access, Import, Export, + Add User) */}
+            {/* Action Buttons (Import, Export, + Add User) */}
             <div className="flex items-center gap-2.5 flex-wrap">
-              <button
-                type="button"
-                onClick={() =>
-                  Swal.fire({
-                    icon: 'info',
-                    title: 'AI Agent Access',
-                    text: 'AI Agent access is enabled for authorized user roles.',
-                  })
-                }
-                className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition-colors cursor-pointer shadow-xs"
-              >
-                <Bot size={15} />
-                <span>AI Agent Access</span>
-              </button>
-
               <button
                 type="button"
                 onClick={() =>
@@ -275,7 +288,9 @@ export default function UserManagementModal({ isOpen, onClose }) {
                     <td colSpan="6" className="py-16 text-center text-slate-400">
                       <p className="font-semibold text-sm">No user records found.</p>
                       <p className="text-xs text-slate-400 mt-1">
-                        Try searching by a different name, Employee Code, or ID.
+                        {activeSearch
+                          ? `No records matching "${activeSearch}". Try another name, code, or status.`
+                          : 'No active users with Working status found.'}
                       </p>
                     </td>
                   </tr>
@@ -293,17 +308,25 @@ export default function UserManagementModal({ isOpen, onClose }) {
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-tr from-slate-200 to-slate-100 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center shrink-0 border border-slate-200 dark:border-slate-700">
-                              {u.face_photo ? (
+                              {u.face_photo && (
                                 <img
                                   src={u.face_photo}
                                   alt={u.name || 'User'}
                                   className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    if (e.currentTarget.nextElementSibling) {
+                                      e.currentTarget.nextElementSibling.style.display = 'flex';
+                                    }
+                                  }}
                                 />
-                              ) : (
-                                <span className="font-bold text-slate-600 dark:text-slate-300 text-sm">
-                                  {(u.name || u.username || 'U')[0].toUpperCase()}
-                                </span>
                               )}
+                              <span
+                                style={{ display: u.face_photo ? 'none' : 'flex' }}
+                                className="w-full h-full font-bold text-slate-600 dark:text-slate-300 text-sm items-center justify-center"
+                              >
+                                {(u.name || u.username || 'U')[0].toUpperCase()}
+                              </span>
                             </div>
                             <div>
                               <p className="font-bold text-slate-800 dark:text-slate-100 leading-tight">
@@ -374,14 +397,6 @@ export default function UserManagementModal({ isOpen, onClose }) {
                               Edit
                             </button>
 
-                            {/* Agent Access Button */}
-                            <button
-                              onClick={() => handleAgentAccess(u)}
-                              className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors cursor-pointer shadow-xs"
-                            >
-                              Agent Access
-                            </button>
-
                             {/* Delete Button */}
                             <button
                               onClick={() => handleDeleteUser(u)}
@@ -399,11 +414,43 @@ export default function UserManagementModal({ isOpen, onClose }) {
             </table>
           </div>
 
-          {/* Footer Bar with user count */}
-          <div className="px-8 py-3.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span>
-              Showing <span className="font-bold text-slate-800 dark:text-slate-200">{users.length}</span> user accounts
-            </span>
+          {/* Footer Bar with user count & pagination */}
+          <div className="px-8 py-3.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850 flex items-center justify-between flex-wrap gap-3 text-xs text-slate-500 dark:text-slate-400">
+            <div>
+              Showing <span className="font-bold text-slate-800 dark:text-slate-200">{users.length}</span> of <span className="font-bold text-slate-800 dark:text-slate-200">{totalCount}</span> user accounts {activeSearch ? '(matching search)' : '(status: Working)'}
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={currentPage <= 1 || loading}
+                onClick={() => {
+                  const prev = currentPage - 1;
+                  setCurrentPage(prev);
+                  loadUsers(activeSearch, prev);
+                }}
+                className="px-3 py-1 font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              >
+                Previous
+              </button>
+              <span className="font-semibold text-slate-600 dark:text-slate-300 px-1">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                type="button"
+                disabled={currentPage >= totalPages || loading}
+                onClick={() => {
+                  const next = currentPage + 1;
+                  setCurrentPage(next);
+                  loadUsers(activeSearch, next);
+                }}
+                className="px-3 py-1 font-bold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+              >
+                Next
+              </button>
+            </div>
+
             <button
               onClick={onClose}
               className="px-4 py-1.5 font-bold rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
@@ -419,7 +466,7 @@ export default function UserManagementModal({ isOpen, onClose }) {
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         userToEdit={selectedUser}
-        onSuccess={() => loadUsers(searchTerm)}
+        onSuccess={() => loadUsers(activeSearch, currentPage)}
       />
     </>
   );

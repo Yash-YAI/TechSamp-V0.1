@@ -4,6 +4,7 @@ import authRoutes from './authRoutes.js';
 import homeRoutes from './homeRoutes.js';
 import userRoutes from './userRoutes.js';
 import dbRoutes from './dbRoutes.js';
+import roleRoutes from './roleRoutes.js';
 
 const router = express.Router();
 
@@ -20,6 +21,7 @@ router.use('/api/auth', authRoutes);
 router.use('/api/home', homeRoutes);
 router.use('/api', userRoutes);
 router.use('/api', dbRoutes);
+router.use('/api', roleRoutes);
 router.use('/api', apiRoutes);
 
 // 404 Route Handler for undefined endpoints

@@ -1,35 +1,34 @@
 import mongoose from 'mongoose';
 
-export const RoleManagementSchema = new mongoose.Schema(
+const roleManagmentSchema = new mongoose.Schema(
   {
-    role: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    jobTitles: {
-      type: Array,
-      default: [],
-    },
-    description: {
-      type: String,
-    },
+    role: { type: String, required: true },
+    jobTitles: [{ type: String }],
+    users: [
+      {
+        emp_id: { type: String },
+        name: { type: String },
+        eng_name: { type: String },
+        kh_name: { type: String },
+        job_title: { type: String },
+        dept_name: { type: String },
+        sect_name: { type: String },
+        working_status: { type: String },
+        phone_number: { type: String },
+        face_photo: { type: String },
+      },
+    ],
   },
   {
-    collection: 'role_managements',
-    strict: false,
+    collection: 'role_management',
     timestamps: true,
   }
 );
 
-/**
- * Factory function to bind RoleManagementSchema to a specific connection
- */
-export const createRoleManagementModel = (connection) => {
-  return connection.models.RoleManagement || connection.model('RoleManagement', RoleManagementSchema);
-};
+// Export factory function for connection binding (TTS / YPM connection)
+export const createRoleManagementModel = (connection) =>
+  connection.models.RoleManagement ||
+  connection.model('RoleManagement', roleManagmentSchema, 'role_management');
 
-const RoleManagement =
-  mongoose.models.RoleManagement || mongoose.model('RoleManagement', RoleManagementSchema);
-
-export default RoleManagement;
+// Default export compatible with factory
+export default createRoleManagementModel;

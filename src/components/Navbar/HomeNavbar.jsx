@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Search,
   Bell,
   ChevronDown,
   Settings,
@@ -10,12 +9,12 @@ import {
   Users,
   ShieldCheck,
   Check,
-  Globe,
   Sun,
   Moon,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/ThemeContext';
+import BrandLogo from '../Common/BrandLogo';
 
 export default function HomeNavbar({
   user,
@@ -27,6 +26,7 @@ export default function HomeNavbar({
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
 
   // Dropdown states
   const [isLangOpen, setIsLangOpen] = useState(false);
@@ -50,7 +50,6 @@ export default function HomeNavbar({
         setIsSettingsOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
@@ -69,78 +68,158 @@ export default function HomeNavbar({
   };
 
   return (
-    <nav className="w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-2.5 flex items-center justify-between sticky top-0 z-40 select-none shadow-xs">
+    <nav
+      style={{
+        width: '100%',
+        backgroundColor: isDark ? 'rgba(15, 23, 42, 0.74)' : 'rgba(255, 255, 255, 0.76)',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        borderBottom: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(226, 232, 240, 0.8)',
+        boxShadow: isDark
+          ? '0 4px 20px -2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+          : '0 4px 20px -2px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+        padding: '10px 24px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        position: 'sticky',
+        top: 0,
+        zIndex: 40,
+        userSelect: 'none',
+        transition: 'background-color 0.3s ease, border-color 0.3s ease',
+      }}
+    >
       {/* LEFT BRAND SECTION - Clickable to return Home */}
       <div
         onClick={() => navigate('/home')}
-        title="Return to Home"
-        className="flex items-center gap-3 cursor-pointer group select-none transition-opacity hover:opacity-85"
+        title="Tech & Samp (T & S) - Return to Home"
+        style={{
+          cursor: 'pointer',
+          userSelect: 'none',
+        }}
       >
-        {/* Show Apps / Logo Badge */}
-        <div className="relative">
-          <div
-            className="w-9 h-9 rounded-xl bg-black flex items-center justify-center text-white font-black text-xs shadow-md border-2 border-amber-400/80 transition-transform group-hover:scale-105"
-          >
-            TL
-          </div>
-        </div>
-
-        {/* Brand Text */}
-        <span className="text-[#8b5cf6] font-black text-2xl tracking-tight transition-transform group-hover:scale-102">
-          T & S
-        </span>
+        <BrandLogo
+          size={38}
+          showText={true}
+          subtitle="Garment Intelligence"
+        />
       </div>
 
       {/* RIGHT ACTIONS SECTION */}
-      <div className="flex items-center gap-3">
-        {/* Search Icon */}
-        {/* <button
-          onClick={onFocusSearch}
-          title="Search"
-          className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors cursor-pointer"
-        >
-          <Search size={18} />
-        </button> */}
-
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         {/* Notification Bell with Badge */}
-        <div className="relative">
+        <div style={{ position: 'relative' }}>
           <button
             title="Notifications"
-            className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors cursor-pointer"
+            style={{
+              padding: 8,
+              color: isDark ? '#94a3b8' : '#475569',
+              background: 'none',
+              border: 'none',
+              borderRadius: 9999,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'background-color 0.2s ease, color 0.2s ease',
+            }}
           >
             <Bell size={18} />
           </button>
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-slate-900" />
+          <span
+            style={{
+              position: 'absolute',
+              top: 6,
+              right: 6,
+              width: 8,
+              height: 8,
+              backgroundColor: '#ef4444',
+              borderRadius: '50%',
+              boxShadow: isDark ? '0 0 0 2px #0f172a' : '0 0 0 2px #ffffff',
+            }}
+          />
         </div>
 
         {/* Language Selector Dropdown */}
-        <div className="relative" ref={langRef}>
+        <div style={{ position: 'relative' }} ref={langRef}>
           <button
             onClick={() => setIsLangOpen(!isLangOpen)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200 shadow-2xs transition-colors cursor-pointer"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '6px 12px',
+              fontSize: 12,
+              fontWeight: 600,
+              borderRadius: 8,
+              border: isDark ? '1px solid rgba(51, 65, 85, 0.85)' : '1px solid rgba(203, 213, 225, 0.85)',
+              backgroundColor: isDark ? 'rgba(30, 41, 59, 0.75)' : 'rgba(255, 255, 255, 0.8)',
+              color: isDark ? '#e2e8f0' : '#334155',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
           >
-            <span className="text-sm">{currentLang.flag}</span>
+            <span style={{ fontSize: 14 }}>{currentLang.flag}</span>
             <span>{currentLang.label}</span>
-            <ChevronDown size={14} className="text-slate-400" />
+            <ChevronDown size={14} style={{ color: '#94a3b8' }} />
           </button>
 
           {isLangOpen && (
-            <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1.5 z-50 text-left animate-in fade-in duration-100">
-              <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <div
+              style={{
+                position: 'absolute',
+                right: 0,
+                marginTop: 8,
+                width: 160,
+                backgroundColor: isDark ? 'rgba(15, 23, 42, 0.94)' : 'rgba(255, 255, 255, 0.94)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                borderRadius: 12,
+                boxShadow: isDark ? '0 12px 30px -4px rgba(0, 0, 0, 0.6)' : '0 12px 30px -4px rgba(15, 23, 42, 0.12)',
+                border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(226, 232, 240, 0.9)',
+                padding: '6px 0',
+                zIndex: 50,
+                textAlign: 'left',
+              }}
+            >
+              <div
+                style={{
+                  padding: '4px 12px',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.8px',
+                  color: isDark ? '#64748b' : '#94a3b8',
+                }}
+              >
                 Select Language
               </div>
               {languages.map((lang) => (
                 <button
                   key={lang.code}
                   onClick={() => handleLanguageChange(lang.code)}
-                  className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium cursor-pointer transition-colors ${
-                    i18n.language === lang.code
-                      ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 font-bold'
-                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
-                  }`}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '8px 12px',
+                    fontSize: 12,
+                    fontWeight: i18n.language === lang.code ? 700 : 500,
+                    cursor: 'pointer',
+                    border: 'none',
+                    backgroundColor: i18n.language === lang.code
+                      ? isDark ? 'rgba(139, 92, 246, 0.2)' : 'rgba(139, 92, 246, 0.1)'
+                      : 'transparent',
+                    color: i18n.language === lang.code
+                      ? isDark ? '#c4b5fd' : '#7c3aed'
+                      : isDark ? '#cbd5e1' : '#334155',
+                    transition: 'background-color 0.15s ease',
+                  }}
                 >
-                  <span className="flex items-center gap-2">
-                    <span className="text-base">{lang.flag}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 15 }}>{lang.flag}</span>
                     <span>{lang.label}</span>
                   </span>
                   {i18n.language === lang.code && <Check size={14} />}
@@ -150,62 +229,179 @@ export default function HomeNavbar({
           )}
         </div>
 
-         {/* Theme Toggle Button (Light / Dark) */}
+        {/* Theme Toggle Button (Light / Dark) */}
         <button
           onClick={toggleTheme}
-          title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-          className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-amber-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all cursor-pointer"
+          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          style={{
+            padding: 8,
+            color: isDark ? '#fbbf24' : '#475569',
+            background: 'none',
+            border: 'none',
+            borderRadius: 9999,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'transform 0.2s ease',
+          }}
         >
-          {theme === 'dark' ? (
-            <Sun size={18} className="text-amber-400 animate-in spin-in-180 duration-200" />
+          {isDark ? (
+            <Sun size={18} style={{ color: '#fbbf24' }} />
           ) : (
-            <Moon size={18} className="text-slate-600 transition-transform hover:-rotate-12 duration-200" />
+            <Moon size={18} style={{ color: '#475569' }} />
           )}
         </button>
 
         {/* User Profile Dropdown */}
-        <div className="relative" ref={profileRef}>
+        <div style={{ position: 'relative' }} ref={profileRef}>
           <button
             onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="flex items-center gap-2.5 pl-1.5 pr-2 py-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '4px 10px 4px 6px',
+              borderRadius: 9999,
+              backgroundColor: isDark ? 'rgba(30, 41, 59, 0.55)' : 'rgba(241, 245, 249, 0.65)',
+              border: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(226, 232, 240, 0.8)',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
           >
             {/* Avatar with Online Dot */}
-            <div className="relative">
-              {user?.face_photo ? (
+            <div style={{ position: 'relative' }}>
+              {user?.face_photo && (
                 <img
                   src={user.face_photo}
                   alt={user.name}
-                  className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-700"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    if (e.currentTarget.nextElementSibling) {
+                      e.currentTarget.nextElementSibling.style.display = 'flex';
+                    }
+                  }}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: isDark ? '1px solid #475569' : '1px solid #cbd5e1',
+                  }}
                 />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 flex items-center justify-center font-bold text-xs border border-purple-300 dark:border-purple-800">
-                  {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                </div>
               )}
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900" />
+              <div
+                style={{
+                  display: user?.face_photo ? 'none' : 'flex',
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  backgroundColor: isDark ? 'rgba(139, 92, 246, 0.25)' : 'rgba(139, 92, 246, 0.15)',
+                  color: isDark ? '#c4b5fd' : '#7c3aed',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 700,
+                  fontSize: 12,
+                  border: isDark ? '1px solid rgba(139, 92, 246, 0.4)' : '1px solid rgba(139, 92, 246, 0.3)',
+                }}
+              >
+                {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+              </div>
+              <span
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  right: 0,
+                  width: 9,
+                  height: 9,
+                  backgroundColor: '#10b981',
+                  borderRadius: '50%',
+                  border: isDark ? '2px solid #0f172a' : '2px solid #ffffff',
+                }}
+              />
             </div>
 
             {/* Name & Job Title */}
-            <div className="text-left hidden sm:block leading-tight">
-              <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate max-w-[120px]">
+            <div style={{ textAlign: 'left', lineHeight: 1.2 }}>
+              <div
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: isDark ? '#f8fafc' : '#0f172a',
+                  maxWidth: 120,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
                 {user?.eng_name || user?.name || 'Yasomi'}
               </div>
-              <div className="text-[10px] text-slate-400 font-medium truncate max-w-[120px]">
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 500,
+                  color: isDark ? '#94a3b8' : '#64748b',
+                  maxWidth: 120,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
                 {user?.job_title || 'Software Developer'}
               </div>
             </div>
 
-            <ChevronDown size={14} className="text-slate-400" />
+            <ChevronDown size={14} style={{ color: '#94a3b8' }} />
           </button>
 
           {isProfileOpen && (
-            <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1.5 z-50 text-left animate-in fade-in duration-100">
+            <div
+              style={{
+                position: 'absolute',
+                right: 0,
+                marginTop: 8,
+                width: 200,
+                backgroundColor: isDark ? 'rgba(15, 23, 42, 0.94)' : 'rgba(255, 255, 255, 0.94)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                borderRadius: 12,
+                boxShadow: isDark ? '0 12px 30px -4px rgba(0, 0, 0, 0.6)' : '0 12px 30px -4px rgba(15, 23, 42, 0.12)',
+                border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(226, 232, 240, 0.9)',
+                padding: '6px 0',
+                zIndex: 50,
+                textAlign: 'left',
+              }}
+            >
               {/* Profile Card Header */}
-              <div className="px-3.5 py-2.5 border-b border-slate-100 dark:border-slate-700">
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
+              <div
+                style={{
+                  padding: '10px 14px',
+                  borderBottom: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid #f1f5f9',
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: isDark ? '#f8fafc' : '#0f172a',
+                    margin: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   {user?.eng_name || user?.name}
                 </p>
-                <p className="text-[11px] text-slate-400 truncate">
+                <p
+                  style={{
+                    fontSize: 11,
+                    color: isDark ? '#94a3b8' : '#64748b',
+                    margin: '2px 0 0',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   {user?.emp_code ? `ID: ${user.emp_code}` : user?.email}
                 </p>
               </div>
@@ -216,20 +412,53 @@ export default function HomeNavbar({
                   setIsProfileOpen(false);
                   onOpenProfile();
                 }}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition-colors"
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '8px 14px',
+                  fontSize: 12,
+                  fontWeight: 500,
+                  border: 'none',
+                  background: 'none',
+                  color: isDark ? '#cbd5e1' : '#334155',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'background-color 0.15s ease',
+                }}
               >
-                <User size={15} className="text-slate-400" />
+                <User size={15} style={{ color: '#94a3b8' }} />
                 <span>{t('nav.profile', 'Profile')}</span>
               </button>
 
-              <div className="my-1 border-t border-slate-100 dark:border-slate-700" />
+              <div
+                style={{
+                  margin: '4px 0',
+                  borderTop: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid #f1f5f9',
+                }}
+              />
 
               <button
                 onClick={() => {
                   setIsProfileOpen(false);
                   onLogout();
                 }}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer transition-colors"
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '8px 14px',
+                  fontSize: 12,
+                  fontWeight: 500,
+                  border: 'none',
+                  background: 'none',
+                  color: isDark ? '#f87171' : '#dc2626',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'background-color 0.15s ease',
+                }}
               >
                 <LogOut size={15} />
                 <span>{t('nav.logout', 'Logout')}</span>
@@ -239,18 +468,54 @@ export default function HomeNavbar({
         </div>
 
         {/* Settings Gear Dropdown */}
-        <div className="relative" ref={settingsRef}>
+        <div style={{ position: 'relative' }} ref={settingsRef}>
           <button
             onClick={() => setIsSettingsOpen(!isSettingsOpen)}
             title="Settings"
-            className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors cursor-pointer"
+            style={{
+              padding: 8,
+              color: isDark ? '#94a3b8' : '#475569',
+              background: 'none',
+              border: 'none',
+              borderRadius: 9999,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'background-color 0.2s ease, color 0.2s ease',
+            }}
           >
             <Settings size={18} />
           </button>
 
           {isSettingsOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1.5 z-50 text-left animate-in fade-in duration-100">
-              <div className="px-3.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <div
+              style={{
+                position: 'absolute',
+                right: 0,
+                marginTop: 8,
+                width: 190,
+                backgroundColor: isDark ? 'rgba(15, 23, 42, 0.94)' : 'rgba(255, 255, 255, 0.94)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                borderRadius: 12,
+                boxShadow: isDark ? '0 12px 30px -4px rgba(0, 0, 0, 0.6)' : '0 12px 30px -4px rgba(15, 23, 42, 0.12)',
+                border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(226, 232, 240, 0.9)',
+                padding: '6px 0',
+                zIndex: 50,
+                textAlign: 'left',
+              }}
+            >
+              <div
+                style={{
+                  padding: '4px 14px',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.8px',
+                  color: isDark ? '#64748b' : '#94a3b8',
+                }}
+              >
                 Administration
               </div>
 
@@ -259,9 +524,23 @@ export default function HomeNavbar({
                   setIsSettingsOpen(false);
                   onOpenManagement('user');
                 }}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition-colors"
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '8px 14px',
+                  fontSize: 12,
+                  fontWeight: 500,
+                  border: 'none',
+                  background: 'none',
+                  color: isDark ? '#cbd5e1' : '#334155',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'background-color 0.15s ease',
+                }}
               >
-                <Users size={15} className="text-slate-400" />
+                <Users size={15} style={{ color: '#94a3b8' }} />
                 <span>{t('nav.userManagement', 'User Management')}</span>
               </button>
 
@@ -270,9 +549,23 @@ export default function HomeNavbar({
                   setIsSettingsOpen(false);
                   onOpenManagement('role');
                 }}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition-colors"
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '8px 14px',
+                  fontSize: 12,
+                  fontWeight: 500,
+                  border: 'none',
+                  background: 'none',
+                  color: isDark ? '#cbd5e1' : '#334155',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'background-color 0.15s ease',
+                }}
               >
-                <ShieldCheck size={15} className="text-slate-400" />
+                <ShieldCheck size={15} style={{ color: '#94a3b8' }} />
                 <span>{t('nav.roleManagement', 'Role Management')}</span>
               </button>
             </div>

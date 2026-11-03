@@ -7,10 +7,11 @@ import { UserMain as User } from './dbController.js';
  */
 export const getUsers = async (req, res) => {
   try {
-    const { search } = req.query;
+    const { search, page, limit } = req.query;
     let filter = {};
 
     if (search && search.trim()) {
+      // When searching: search across ALL users (working and non-working)
       const term = search.trim();
       const regex = new RegExp(term, 'i');
       filter = {
@@ -24,17 +25,43 @@ export const getUsers = async (req, res) => {
           { kh_name: regex },
           { dept_name: regex },
           { job_title: regex },
+          { working_status: regex },
+        ],
+      };
+    } else {
+      // DEFAULT: only display users with status 'WORKING'
+      filter = {
+        $or: [
+          { working_status: { $regex: /^working$/i } },
+          { status: { $regex: /^working$/i } },
+          { working_status: { $exists: false } },
+          { working_status: null },
+          { working_status: '' },
         ],
       };
     }
 
-    const users = await User.find(filter)
-      .select('-password')
-      .sort({ created_at: -1, _id: -1 })
-      .lean();
+    // Pagination for high performance (prevents browser freeze on 10,000+ records)
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(200, Math.max(1, parseInt(limit, 10) || 50));
+    const skip = (pageNum - 1) * limitNum;
+
+    const [total, users] = await Promise.all([
+      User.countDocuments(filter),
+      User.find(filter)
+        .select('-password')
+        .sort({ created_at: -1, _id: -1 })
+        .skip(skip)
+        .limit(limitNum)
+        .lean(),
+    ]);
 
     return res.status(200).json({
       success: true,
+      total,
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil(total / limitNum) || 1,
       count: users.length,
       data: users,
     });
@@ -249,7 +276,6 @@ export const getRoles = async (req, res) => {
       'YAI',
       'GA Main',
       'Energy',
-      'Tech Pack',
       'MR Clerk',
       'Document Translation',
       'Legacy TP',
@@ -288,7 +314,6 @@ export const getRoles = async (req, res) => {
         'YAI',
         'GA Main',
         'Energy',
-        'Tech Pack',
         'MR Clerk',
         'Document Translation',
         'Legacy TP',

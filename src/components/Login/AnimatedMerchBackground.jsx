@@ -320,6 +320,37 @@ export default function AnimatedMerchBackground() {
         pointerEvents: 'none',
       }}
     >
+      {/* Slow pan & zoom for the background image; scale stays above 1 so its edges never show */}
+      <style>{`
+        @keyframes loginBgDrift {
+          from { transform: scale(1.03) translate(0, 0); }
+          to { transform: scale(1.12) translate(-1.5%, -1%); }
+        }
+        .login-bg-image {
+          animation: loginBgDrift 30s ease-in-out infinite alternate;
+          will-change: transform;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .login-bg-image { animation: none; }
+        }
+      `}</style>
+
+      {/* Apparel Merchandising Background Image Layer */}
+      <div
+        className="login-bg-image"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: 'url(/assets/login_bg.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          opacity: isDark ? 0.38 : 0.68,
+          filter: isDark ? 'brightness(0.65) contrast(1.1)' : 'brightness(1.02) saturate(1.05)',
+          transition: 'opacity 0.4s ease, filter 0.4s ease',
+        }}
+      />
+
       {/* Tactile Textile Weave Pattern Overlay */}
       <div
         style={{
