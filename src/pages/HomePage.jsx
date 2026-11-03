@@ -4,19 +4,20 @@ import { useTranslation } from "react-i18next";
 import { Search } from "lucide-react";
 import Swal from "sweetalert2";
 import { useTheme } from "../context/ThemeContext";
-import apiClient from "../api/client";
 import { modulesConfig } from "../config/modulesConfig";
-import HomeNavbar from "../components/HomePage/HomeNavbar";
-import SectionColumn from "../components/HomePage/SectionColumn";
-import ProfileModal from "../components/HomePage/ProfileModal";
-import ManagementModal from "../components/HomePage/ManagementModal";
+import HomeNavbar from "../components/Navbar/HomeNavbar";
+import SectionColumn from "../components/MainMenu/SectionColumn";
+import ProfileModal from "../components/Users/ProfileModal";
+import UserManagementModal from "../components/Users/UserManagementModal";
+import RoleManagementModal from "../components/RoleManagement/RoleManagementModal";
 
 export default function HomePage({ user, onLogout }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [searchTerm, setSearchTerm] = useState("");
   const [userRoles, setUserRoles] = useState(user?.roles || []);
-  const [newOrdersCount, setNewOrdersCount] = useState(0);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [managementModal, setManagementModal] = useState({ open: false, type: 'user' });
 
@@ -36,45 +37,43 @@ export default function HomePage({ user, onLogout }) {
     }
   }, [user]);
 
-  // Read orders from API to calculate New Orders bubble count
-  useEffect(() => {
-    const fetchNewOrdersCount = async () => {
-      try {
-        const response = await apiClient.get('/api/production-orders');
-        if (Array.isArray(response.data)) {
-          const count = response.data.filter((o) => o.type === "New").length;
-          setNewOrdersCount(count);
-        }
-      } catch {
-        // Silently skip if endpoint is not provisioned
-      }
-    };
-    fetchNewOrdersCount();
-  }, []);
-
   // Translate section titles and items dynamically based on current language
-  const resolveTitle = useCallback((key, fallback) => {
-    if (!key) return fallback || "Module";
-    if (key.startsWith("tech.") || key.startsWith("nav.") || key.startsWith("home.")) {
-      const cleanKey = key.replace(/^[^.]+\./, "");
-      return t(key, fallback || cleanKey);
+  const resolveTitle = useCallback((key, customFallback) => {
+    if (!key) return customFallback || "Module";
+    const cleanName = key.replace(/^(tech\.|nav\.|home\.)/, "");
+    const fallbackText = customFallback && customFallback !== "Module" && customFallback !== "" ? customFallback : cleanName;
+
+    // Check key directly
+    const translatedDirect = t(key, { defaultValue: "" });
+    if (translatedDirect && translatedDirect !== key) {
+      return translatedDirect;
     }
-    return t(`tech.${key}`, fallback || key);
+
+    // Check with tech. prefix if not already present
+    if (!key.startsWith("tech.")) {
+      const translatedTech = t(`tech.${key}`, { defaultValue: "" });
+      if (translatedTech && translatedTech !== `tech.${key}`) {
+        return translatedTech;
+      }
+    }
+
+    return fallbackText;
   }, [t]);
 
   const allSections = useMemo(() => {
     return modulesConfig
       .filter((section) => !section.hidden)
       .map((section) => ({
+        ...section,
         id: section.id,
-        title: resolveTitle(section.titleKey, section.id),
+        title: resolveTitle(section.titleKey, section.title),
         items: section.items.map((item) => ({
           ...item,
-          title: resolveTitle(item.titleKey, "Module"),
-          badge: item.hasBadge ? (newOrdersCount > 0 ? newOrdersCount : null) : null,
+          title: resolveTitle(item.titleKey, item.title),
+          badge: item.badge || null,
         })),
       }));
-  }, [resolveTitle, newOrdersCount]);
+  }, [resolveTitle]);
 
   // List of normalized roles for current user
   const rolesList = useMemo(() => {
@@ -91,44 +90,59 @@ export default function HomePage({ user, onLogout }) {
 
   const isSuperAdmin = useMemo(() => {
     return rolesList.some((r) =>
-      r.includes("super admin") || r.includes("superadmin")
-    );
-  }, [rolesList]);
-
-  const isPrivileged = useMemo(() => {
-    return rolesList.some((r) =>
-      r.includes("admin") ||
+      r === "super admin" ||
       r.includes("super admin") ||
       r.includes("superadmin") ||
       r.includes("developer")
     );
   }, [rolesList]);
 
-  // --- ACCESS CONTROL LOGIC ---
-  const hasAccess = useCallback(
+  const isAdmin = useMemo(() => {
+    return isSuperAdmin || rolesList.some((r) => r === "admin" || r.includes("admin"));
+  }, [isSuperAdmin, rolesList]);
+
+  // --- VISIBILITY LOGIC (What modules can be seen on the Home dashboard) ---
+  // In default, allow Admin and Super Admin to see ALL modules.
+  // Regular non-admin users only see modules for which they have the specific module role.
+  const canSeeModule = useCallback(
     (item) => {
       if (item.bypassAccess) return true;
       if (!user) return false;
 
-      // Super Admin, Admin, and Developers access all
-      if (isPrivileged) return true;
+      // 1. Super Admin and Admin can see all modules in default (including Coming Soon)
+      if (isSuperAdmin || isAdmin) return true;
 
-      // Role-based matching
+      // 2. Regular non-admin users: can only see modules matching their assigned module role
+      const itemTitleLower = (item.title || "").trim().toLowerCase();
+      const titleKeyClean = (item.titleKey || "").replace(/^(tech\.|nav\.|home\.)/, "").trim().toLowerCase();
+
+      // Check matching by module title or titleKey
+      if (itemTitleLower && rolesList.includes(itemTitleLower)) return true;
+      if (titleKeyClean && rolesList.includes(titleKeyClean)) return true;
+
+      // Check item.roles array
       if (item.roles && item.roles.length > 0) {
-        const itemRolesLower = item.roles.map((r) => String(r).toLowerCase());
-        return rolesList.some((userRole) => itemRolesLower.includes(userRole));
+        return item.roles.some((r) => {
+          const rLower = String(r).trim().toLowerCase();
+          if (rLower === "super admin" || rLower === "admin") return false;
+          return rolesList.includes(rLower);
+        });
       }
 
-      // Default: allow access if no strict roles specified
-      return true;
+      return false;
     },
-    [user, isPrivileged, rolesList]
+    [user, isSuperAdmin, isAdmin, rolesList]
   );
 
+  // If a user has only one module access, they can ONLY see that module only on Home
   const accessibleSections = useMemo(() => {
-    // Show sections on Home dashboard
-    return allSections;
-  }, [allSections]);
+    return allSections
+      .map((section) => ({
+        ...section,
+        items: section.items.filter((item) => canSeeModule(item)),
+      }))
+      .filter((section) => section.items.length > 0);
+  }, [allSections, canSeeModule]);
 
   const filteredSections = useMemo(() => {
     if (!searchTerm.trim()) return accessibleSections;
@@ -142,8 +156,6 @@ export default function HomePage({ user, onLogout }) {
       }))
       .filter((section) => section.items.length > 0);
   }, [accessibleSections, searchTerm]);
-
-  const { theme } = useTheme();
 
   // SweetAlert Handler
   const showAlert = (type, title, text) => {
@@ -165,7 +177,8 @@ export default function HomePage({ user, onLogout }) {
   const handleNavigation = (item) => {
     const rawStatus = (item.status || (item.version === '0' ? 'C' : 'F')).toUpperCase();
 
-    // Coming Soon ('C') modules are restricted to Super Admins only
+    // Coming Soon ('C') modules:
+    // Admin can see them on Home, but cannot open them. Only Super Admin can go inside!
     if (rawStatus === 'C') {
       if (!isSuperAdmin) {
         showAlert(
@@ -177,7 +190,10 @@ export default function HomePage({ user, onLogout }) {
       }
     }
 
-    if (hasAccess(item)) {
+    // Permission check for opening modules
+    const canOpen = isSuperAdmin || isAdmin || canSeeModule(item);
+
+    if (canOpen) {
       if (item.path.startsWith('http')) {
         window.open(item.path, '_blank');
       } else {
@@ -189,49 +205,89 @@ export default function HomePage({ user, onLogout }) {
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 flex flex-col">
-      {/* Top Navbar with YPI Branding, Language Selector, User Profile & Settings */}
-      <HomeNavbar
-        user={user}
-        onLogout={onLogout}
-        onOpenProfile={() => setIsProfileModalOpen(true)}
-        onOpenManagement={(type) => setManagementModal({ open: true, type })}
-        onFocusSearch={handleFocusSearch}
+    <div
+      style={{
+        position: 'relative',
+        minHeight: '100vh',
+        width: '100%',
+        backgroundColor: isDark ? '#0b0f19' : '#f8fafc',
+        color: isDark ? '#f1f5f9' : '#1e293b',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {/* Apparel Merchandising Studio Home Background Wallpaper */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 0,
+          backgroundImage: 'url(/assets/home_bg.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center top',
+          backgroundRepeat: 'no-repeat',
+          opacity: isDark ? 0.32 : 0.62,
+          filter: isDark ? 'brightness(0.62) contrast(1.1)' : 'brightness(1.02) saturate(1.03)',
+          pointerEvents: 'none',
+          transition: 'opacity 0.4s ease, filter 0.4s ease',
+        }}
       />
 
-      <main className="flex-1 w-full px-6 md:px-10 lg:px-12 py-8 box-border">
-        {/* Search Bar */}
-        {/* <div className="w-full max-w-2xl mx-auto mb-10">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 pointer-events-none" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              placeholder={t("nav.search", "Search for modules...")}
-              className="w-full pl-12 pr-6 py-3 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs focus:ring-2 focus:ring-purple-500 outline-none transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400 text-sm"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+      {/* Tactile Textile Weave Pattern Overlay */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 1,
+          pointerEvents: 'none',
+          backgroundImage: isDark
+            ? 'repeating-linear-gradient(0deg, transparent, transparent 5px, rgba(255, 255, 255, 0.015) 5px, rgba(255, 255, 255, 0.015) 6px), repeating-linear-gradient(90deg, transparent, transparent 5px, rgba(255, 255, 255, 0.015) 5px, rgba(255, 255, 255, 0.015) 6px)'
+            : 'repeating-linear-gradient(0deg, transparent, transparent 5px, rgba(15, 23, 42, 0.015) 5px, rgba(15, 23, 42, 0.015) 6px), repeating-linear-gradient(90deg, transparent, transparent 5px, rgba(15, 23, 42, 0.015) 5px, rgba(15, 23, 42, 0.015) 6px)',
+          opacity: 0.85,
+        }}
+      />
+
+      {/* Foreground Content */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+          width: '100%',
+        }}
+      >
+        {/* Top Navbar with YPI Branding, Language Selector, User Profile & Settings */}
+        <HomeNavbar
+          user={user}
+          onLogout={onLogout}
+          onOpenProfile={() => setIsProfileModalOpen(true)}
+          onOpenManagement={(type) => setManagementModal({ open: true, type })}
+          onFocusSearch={handleFocusSearch}
+        />
+
+        <main className="flex-1 w-full px-6 md:px-10 lg:px-12 py-8 box-border">
+          {/* Main Sections: Full Width */}
+          <div className="w-full flex flex-col gap-10">
+            {filteredSections.map((section) => (
+              <SectionColumn
+                key={section.id}
+                section={section}
+                onItemClick={handleNavigation}
+              />
+            ))}
+
+            {filteredSections.length === 0 && (
+              <div className="w-full text-center py-16 text-slate-400 font-semibold">
+                No modules match &quot;{searchTerm}&quot;
+              </div>
+            )}
           </div>
-        </div> */}
-
-        {/* Main Sections: Full Width */}
-        <div className="w-full flex flex-col gap-10">
-          {filteredSections.map((section) => (
-            <SectionColumn
-              key={section.id}
-              section={section}
-              onItemClick={handleNavigation}
-            />
-          ))}
-
-          {filteredSections.length === 0 && (
-            <div className="w-full text-center py-16 text-slate-400 font-semibold">
-              No modules match &quot;{searchTerm}&quot;
-            </div>
-          )}
-        </div>
-      </main>
+        </main>
+      </div>
 
       {/* User Profile Modal */}
       <ProfileModal
@@ -240,11 +296,16 @@ export default function HomePage({ user, onLogout }) {
         onClose={() => setIsProfileModalOpen(false)}
       />
 
-      {/* User / Role Management Modal */}
-      <ManagementModal
-        type={managementModal.type}
-        isOpen={managementModal.open}
+      {/* User Management Modal */}
+      <UserManagementModal
+        isOpen={managementModal.open && managementModal.type === 'user'}
         onClose={() => setManagementModal({ open: false, type: 'user' })}
+      />
+
+      {/* Role Management Modal */}
+      <RoleManagementModal
+        isOpen={managementModal.open && managementModal.type === 'role'}
+        onClose={() => setManagementModal({ open: false, type: 'role' })}
       />
     </div>
   );

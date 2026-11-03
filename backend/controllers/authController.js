@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import { UserMain as User } from './dbController.js';
 import config from '../config/env.js';
 
 const JWT_SECRET = config.jwtSecret || 'techsamp_secret_key_2026';
@@ -21,11 +21,12 @@ export const login = async (req, res) => {
 
     const cleanUsername = String(username).trim();
 
-    // Query User by emp_code OR name (case-insensitive)
+    // Query User by exact emp_code, name, or username (case-sensitive)
     const user = await User.findOne({
       $or: [
         { emp_code: cleanUsername },
-        { name: { $regex: new RegExp(`^${cleanUsername}$`, 'i') } },
+        { name: cleanUsername },
+        { username: cleanUsername },
       ],
     });
 
@@ -36,7 +37,20 @@ export const login = async (req, res) => {
       });
     }
 
-    // Verify Password
+    // Enforce strict case-sensitive matching in JavaScript for username/emp_code
+    const isExactUsernameMatch =
+      user.emp_code === cleanUsername ||
+      user.name === cleanUsername ||
+      user.username === cleanUsername;
+
+    if (!isExactUsernameMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid Employee Code/Name or password.',
+      });
+    }
+
+    // Verify Password (strictly case-sensitive)
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({

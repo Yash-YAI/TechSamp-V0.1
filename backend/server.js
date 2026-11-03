@@ -7,6 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import config from './config/env.js';
 import { connectDB, disconnectDB } from './config/db.js';
+import { disconnectMongoDB } from './controllers/dbController.js';
 import routes from './routes/index.js';
 
 const app = express();
@@ -101,8 +102,9 @@ export const stopServer = async () => {
     console.log('[Server] HTTP server stopped.');
   }
 
-  // Stop Database Connection
+  // Stop Database Connections (Primary + Multi-DB connections)
   await disconnectDB();
+  await disconnectMongoDB();
   console.log('[Server] Graceful shutdown complete.');
 };
 

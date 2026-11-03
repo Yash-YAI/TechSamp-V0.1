@@ -8,6 +8,12 @@
     "comingSoon": "即将推出"
   },
   "tech": {
+    "Production Planning & Operations": "生产计划与运营",
+    "Marker Order": "排料单",
+    "Marker Ratio": "马克比例",
+    "Fabric Consumption": "面料用量",
+    "GSD / SAM": "GSD / SAM",
+    "Sample": "样衣",
     "Order Reference": "订单参考",
     "ORDER REFERENCE": "订单参考",
     "Document Type": "文档类型",

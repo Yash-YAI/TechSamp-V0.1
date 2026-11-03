@@ -113,8 +113,18 @@ Open `.env` (and `backend/.env`) in your text editor and adjust the values as ne
 PORT=5003
 NODE_ENV=development
 
-# Database Configuration (MongoDB)
+# Multi-Database Configuration (MongoDB)
+# 1. Main User Database (eco_development / ym_eco_board)
 MONGO_URI=mongodb://127.0.0.1:27017/eco_development
+MongoDB_URI_ym_eco_board=mongodb://127.0.0.1:27017/eco_development
+
+# 2. Tech & Samp Database (techSamp / ym_ypm)
+MongoDB_URI_ym_ypm=mongodb://127.0.0.1:27017/techSamp
+MONGO_URI_TECHSAMP=mongodb://127.0.0.1:27017/techSamp
+
+# 3. Production Operations Database (ym_prod)
+MongoDB_URI_ym_prod=mongodb://127.0.0.1:27017/ym_prod
+MONGO_URI_PROD=mongodb://127.0.0.1:27017/ym_prod
 
 # JWT Authentication Secrets
 JWT_SECRET=your_super_secret_jwt_key_here

@@ -8,6 +8,12 @@
     "comingSoon": "នឹងមកដល់ឆាប់ៗ"
   },
   "tech": {
+    "Production Planning & Operations": "ផែនការផលិតកម្ម និងប្រតិបត្តិការ",
+    "Marker Order": "ការបញ្ជាទិញម៉ាកឃ័រ",
+    "Marker Ratio": "សមាមាត្រម៉ាកឃ័រ",
+    "Fabric Consumption": "ការប្រើប្រាស់ក្រណាត់",
+    "GSD / SAM": "GSD / SAM",
+    "Sample": "គំរូ",
     "Order Reference": "ការយោងការបញ្ជាទិញ",
     "ORDER REFERENCE": "ការយោងការបញ្ជាទិញ",
     "Document Type": "ប្រភេទឯកសារ",

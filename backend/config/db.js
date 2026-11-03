@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import config from './env.js';
+import { disconnectMongoDB } from '../controllers/dbController.js';
 
 let isConnected = false;
 
@@ -8,7 +9,7 @@ let isConnected = false;
  */
 export const connectDB = async () => {
   if (isConnected) {
-    console.log('[DB] Already connected to MongoDB.');
+    console.log('[DB] Primary database already connected.');
     return;
   }
 
@@ -20,11 +21,7 @@ export const connectDB = async () => {
     isConnected = true;
     console.log(`[DB] Connected successfully to host: ${conn.connection.host}, database: ${conn.connection.name}`);
   } catch (error) {
-    console.error(`[DB] Connection error: ${error.message}`);
-    // If running in development without MongoDB running, don't crash the server immediately, but log warning
-    if (config.nodeEnv === 'production') {
-      process.exit(1);
-    }
+    console.warn(`[DB] Primary mongoose connection warning: ${error.message}`);
   }
 };
 
@@ -32,14 +29,13 @@ export const connectDB = async () => {
  * Stop Database Connection
  */
 export const disconnectDB = async () => {
-  if (!isConnected) {
-    return;
-  }
-
   try {
-    await mongoose.disconnect();
-    isConnected = false;
-    console.log('[DB] Disconnected from MongoDB.');
+    await disconnectMongoDB();
+    if (isConnected) {
+      await mongoose.disconnect();
+      isConnected = false;
+    }
+    console.log('[DB] Disconnected from all MongoDB instances.');
   } catch (error) {
     console.error(`[DB] Disconnection error: ${error.message}`);
   }

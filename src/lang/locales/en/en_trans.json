@@ -8,6 +8,12 @@
     "comingSoon": "Coming Soon"
   },
   "tech": {
+    "Production Planning & Operations": "Production Planning & Operations",
+    "Marker Order": "Marker Order",
+    "Marker Ratio": "Marker Ratio",
+    "Fabric Consumption": "Fabric Consumption",
+    "GSD / SAM": "GSD / SAM",
+    "Sample": "Sample",
     "Order Reference": "Order Reference",
     "ORDER REFERENCE": "ORDER REFERENCE",
     "Document Type": "Document Type",
